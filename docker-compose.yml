@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 데이터베이스 (개발용)
+  postgres:
+    image: postgres:15-alpine
+    container_name: youturn-postgres
+    environment:
+      POSTGRES_DB: youturn_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - youturn-network
+
+  # NestJS 애플리케이션
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: youturn-server
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+      DB_DATABASE: youturn_dev
+      JWT_SECRET: dev-jwt-secret-key
+      JWT_EXPIRES_IN: 24h
+      CORS_ORIGIN: http://localhost:3000,http://localhost:8080
+      LOG_LEVEL: debug
+    depends_on:
+      - postgres
+    networks:
+      - youturn-network
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+  # Redis (향후 캐싱/세션 관리용)
+  redis:
+    image: redis:7-alpine
+    container_name: youturn-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - youturn-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  youturn-network:
+    driver: bridge
