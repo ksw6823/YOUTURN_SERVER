@@ -35,8 +35,7 @@ export class AuthController {
   @Post('refresh')
   @HttpCode(200)
   async refresh(@Body() body: { refreshToken: string }) {
-    const tokens = await this.authService.refresh(body.refreshToken);
-    return tokens;
+    return this.authService.refresh(body.refreshToken);
   }
 
   @Post('logout')

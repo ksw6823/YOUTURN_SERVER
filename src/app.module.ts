@@ -3,6 +3,9 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ConsultingsModule } from './v1/consultings/consultings.module';
+import { AuthModule } from './v1/auth/auth.module';
+import { DictionaryInformationModule } from './v1/dictionary-information/dictionary-information.module';
 
 @Module({
   imports: [
@@ -24,6 +27,9 @@ import { AppService } from './app.service';
       logging: process.env.NODE_ENV === 'development',
       ssl: { rejectUnauthorized: false }, // AWS RDS SSL 필수
     }),
+    ConsultingsModule,
+    AuthModule,
+    DictionaryInformationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
