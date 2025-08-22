@@ -2,7 +2,7 @@ import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ConsultingsService } from './consultings.service';
 import { CreateConsultingDto } from './dto/create-consulting.dto';
 
-@Controller('v1/consultings')
+@Controller('v1/consulting')
 export class ConsultingsController {
   constructor(private readonly consultingsService: ConsultingsService) {}
 

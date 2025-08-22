@@ -1,13 +1,12 @@
-import { IsString, IsDateString, IsInt, IsEnum } from 'class-validator';
-import { Type } from 'class-transformer';
-
-export enum Gender {
-  MALE = 'MALE',
-  FEMALE = 'FEMALE',
-}
+import { IsString, MinLength } from 'class-validator';
 
 export class LoginDto {
   @IsString()
   login_id: string;
+
+  @IsString()
+  @MinLength(8)
+  password: string;
 }
+
 
