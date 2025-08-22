@@ -1,8 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dtos/login.dto';
-import { CredentialsDto } from './dtos/credentials.dto';
 import { SignupDto } from './dtos/signup.dto';
+import { CredentialsDto } from './dtos/credentials.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -15,27 +15,12 @@ export class AuthService {
     @InjectRepository(User) private readonly userRepo: Repository<User>,
   ) {}
 
-  async issueAccessToken(userProfile: LoginDto) {
-    const payload = {
-      user_id: userProfile.user_id,
-      name: userProfile.name,
-      gender: userProfile.gender,
-      address: userProfile.address,
-      occupation: userProfile.occupation,
-      birth_date: userProfile.birth_date,
-      funds: userProfile.funds,
-      family_member: userProfile.family_member,
-      preferred_crop: userProfile.preferred_crop,
-      preferred_area: userProfile.preferred_area,
-      move_period: userProfile.move_period,
-      farming_experience: userProfile.farming_experience,
-    };
-
-    const accessToken = await this.jwtService.signAsync(payload);
-    return {
-      accessToken,
-      user: userProfile,
-    };
+  async issueAccessToken(user: User) {
+    const payload = { id: user.id, login_id: user.login_id };
+    const { accessToken, refreshToken } = await this.signTokens(payload);
+    user.refresh_token_hash = await bcrypt.hash(refreshToken, 10);
+    await this.userRepo.save(user);
+    return { accessToken, refreshToken, user: { id: user.id, login_id: user.login_id } };
   }
 
   private async signTokens(payload: Record<string, any>) {
@@ -50,41 +35,21 @@ export class AuthService {
   async signup(dto: SignupDto) {
     const passwordHash = await bcrypt.hash(dto.password, 10);
     const entity = this.userRepo.create({
-      name: dto.name,
+      login_id: dto.login_id,
+      password_hash: passwordHash,
       gender: dto.gender as any,
+      name: dto.name,
       address: dto.address,
       occupation: dto.occupation,
       birth_date: new Date(dto.birth_date),
-      funds: dto.funds,
-      family_member: dto.family_member,
-      preferred_crop: dto.preferred_crop,
-      preferred_area: dto.preferred_area,
-      move_period: new Date(dto.move_period),
-      farming_experience: dto.farming_experience,
-      login_id: dto.login_id,
-      password_hash: passwordHash,
     });
     const user = await this.userRepo.save(entity);
-
-    const payload = {
-      user_id: user.user_id,
-      name: user.name,
-      gender: user.gender,
-      address: user.address,
-      occupation: user.occupation,
-      birth_date: user.birth_date,
-      funds: user.funds,
-      family_member: user.family_member,
-      preferred_crop: user.preferred_crop,
-      preferred_area: user.preferred_area,
-      move_period: user.move_period,
-      farming_experience: user.farming_experience,
-      login_id: user.login_id,
-    };
-    const { accessToken, refreshToken } = await this.signTokens(payload);
-    user.refresh_token_hash = await bcrypt.hash(refreshToken, 10);
-    await this.userRepo.save(user);
-    return { accessToken, refreshToken, user: payload };
+    // Ensure external unique user_id is populated so downstream APIs can reference it
+    if (!user.user_id) {
+      user.user_id = user.id;
+      await this.userRepo.save(user);
+    }
+    return this.issueAccessToken(user);
   }
 
   async login(creds: CredentialsDto) {
@@ -92,25 +57,7 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('Invalid credentials');
     const ok = await bcrypt.compare(creds.password, user.password_hash);
     if (!ok) throw new UnauthorizedException('Invalid credentials');
-    const payload = {
-      user_id: user.user_id,
-      name: user.name,
-      gender: user.gender,
-      address: user.address,
-      occupation: user.occupation,
-      birth_date: user.birth_date,
-      funds: user.funds,
-      family_member: user.family_member,
-      preferred_crop: user.preferred_crop,
-      preferred_area: user.preferred_area,
-      move_period: user.move_period,
-      farming_experience: user.farming_experience,
-      login_id: user.login_id,
-    };
-    const { accessToken, refreshToken } = await this.signTokens(payload);
-    user.refresh_token_hash = await bcrypt.hash(refreshToken, 10);
-    await this.userRepo.save(user);
-    return { accessToken, refreshToken, user: payload };
+    return this.issueAccessToken(user);
   }
 
   async refresh(refreshToken: string) {
@@ -120,22 +67,7 @@ export class AuthService {
     if (!user || !user.refresh_token_hash) throw new UnauthorizedException();
     const ok = await bcrypt.compare(refreshToken, user.refresh_token_hash);
     if (!ok) throw new UnauthorizedException();
-
-    const payload = {
-      user_id: user.user_id,
-      name: user.name,
-      gender: user.gender,
-      address: user.address,
-      occupation: user.occupation,
-      birth_date: user.birth_date,
-      funds: user.funds,
-      family_member: user.family_member,
-      preferred_crop: user.preferred_crop,
-      preferred_area: user.preferred_area,
-      move_period: user.move_period,
-      farming_experience: user.farming_experience,
-      login_id: user.login_id,
-    };
+    const payload = { id: user.id, login_id: user.login_id };
     const { accessToken, refreshToken: newRefreshToken } = await this.signTokens(payload);
     user.refresh_token_hash = await bcrypt.hash(newRefreshToken, 10);
     await this.userRepo.save(user);

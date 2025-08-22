@@ -1,6 +1,10 @@
-import { IsString, IsDateString, IsInt, IsEnum, MinLength } from 'class-validator';
-import { Type } from 'class-transformer';
-import { Gender } from './login.dto';
+import { IsString, IsEnum, MinLength, IsDateString } from 'class-validator';
+
+export enum Gender {
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  OTHER = 'OTHER',
+}
 
 export class SignupDto {
   @IsString()
@@ -10,11 +14,11 @@ export class SignupDto {
   @MinLength(8)
   password: string;
 
-  @IsString()
-  name: string;
-
   @IsEnum(Gender)
   gender: Gender;
+
+  @IsString()
+  name: string;
 
   @IsString()
   address: string;
@@ -24,26 +28,6 @@ export class SignupDto {
 
   @IsDateString()
   birth_date: string;
-
-  @Type(() => Number)
-  @IsInt()
-  funds: number;
-
-  @IsString()
-  family_member: string;
-
-  @IsString()
-  preferred_crop: string;
-
-  @IsString()
-  preferred_area: string;
-
-  @IsDateString()
-  move_period: string;
-
-  @Type(() => Number)
-  @IsInt()
-  farming_experience: number;
 }
 
 
