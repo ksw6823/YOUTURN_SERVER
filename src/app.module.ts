@@ -5,7 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConsultingsModule } from './v1/consultings/consultings.module';
 import { AuthModule } from './v1/auth/auth.module';
-import { DictionaryInformationModule } from './v1/dictionary-information/dictionary-information.module';
+import { InformationModule } from './v1/information/information.module';
 
 @Module({
   imports: [
@@ -29,7 +29,7 @@ import { DictionaryInformationModule } from './v1/dictionary-information/diction
     }),
     ConsultingsModule,
     AuthModule,
-    DictionaryInformationModule,
+    InformationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
