@@ -1,10 +1,16 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { User, } from '../../auth/entities/user.entity';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { User } from '../../auth/entities/user.entity';
 
 export enum GenderEntityEnum {
-	MALE = 'MALE',
-	FEMALE = 'FEMALE',
-	OTHER = 'OTHER',
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  OTHER = 'OTHER',
 }
 
 @Entity({ name: 'information' })
@@ -46,5 +52,3 @@ export class Information {
   @Column({ name: 'etc', type: 'varchar', length: 255 })
   etc: string;
 }
-
-
