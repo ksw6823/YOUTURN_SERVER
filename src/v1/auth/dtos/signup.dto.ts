@@ -1,4 +1,4 @@
-import { IsString, IsEnum, MinLength, IsDateString } from 'class-validator';
+import { IsString, MinLength } from 'class-validator';
 
 export class SignupDto {
   @IsString()
@@ -11,5 +11,3 @@ export class SignupDto {
   @IsString()
   nickname: string;
 }
-
-

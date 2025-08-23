@@ -5,7 +5,5 @@ export class CreateConsultingDto {
   information_id: number;
 
   @IsString()
-  result: string;
+  content: string; // 마크다운 형식의 컨설팅 내용
 }
-
-
