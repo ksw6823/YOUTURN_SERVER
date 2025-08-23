@@ -12,5 +12,3 @@ import { User } from '../auth/entities/user.entity';
   exports: [InformationService],
 })
 export class InformationModule {}
-
-

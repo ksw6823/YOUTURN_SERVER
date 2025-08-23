@@ -17,9 +17,11 @@ import { User } from './entities/user.entity';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_ACCESS_SECRET') || 'dev_access_secret',
+        secret:
+          configService.get<string>('JWT_ACCESS_SECRET') || 'dev_access_secret',
         signOptions: {
-          expiresIn: configService.get<string>('JWT_ACCESS_EXPIRES_IN') || '15m',
+          expiresIn:
+            configService.get<string>('JWT_ACCESS_EXPIRES_IN') || '15m',
         },
       }),
     }),
@@ -29,5 +31,3 @@ import { User } from './entities/user.entity';
   exports: [AuthService],
 })
 export class AuthModule {}
-
-

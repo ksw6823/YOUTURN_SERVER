@@ -12,5 +12,3 @@ export class InformationController {
     return this.service.create(dto);
   }
 }
-
-

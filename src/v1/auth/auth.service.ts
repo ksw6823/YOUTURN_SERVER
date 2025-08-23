@@ -32,12 +32,12 @@ export class AuthService {
   }
 
   async login(creds: LoginDto) {
-    const user = await this.userRepo.findOne({ where: { login_id: creds.login_id } });
+    const user = await this.userRepo.findOne({
+      where: { login_id: creds.login_id },
+    });
     if (!user) throw new UnauthorizedException('Invalid credentials');
     const ok = await bcrypt.compare(creds.password, user.password);
     if (!ok) throw new UnauthorizedException('Invalid credentials');
     return this.AccessToken(user);
   }
 }
-
-

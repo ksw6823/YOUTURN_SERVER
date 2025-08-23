@@ -8,12 +8,15 @@ import { CreateInformationDto } from './dto/create-information.dto';
 @Injectable()
 export class InformationService {
   constructor(
-    @InjectRepository(Information) private readonly diRepo: Repository<Information>,
+    @InjectRepository(Information)
+    private readonly diRepo: Repository<Information>,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
   ) {}
 
   async create(dto: CreateInformationDto) {
-    const user = await this.userRepo.findOne({ where: { user_id: dto.user_id } });
+    const user = await this.userRepo.findOne({
+      where: { user_id: dto.user_id },
+    });
     if (!user) throw new NotFoundException('User not found for given user_id');
 
     const di = this.diRepo.create({
@@ -29,9 +32,7 @@ export class InformationService {
       farming_experience: dto.farming_experience,
       etc: dto.etc,
     });
-    const saved = await this.diRepo.save(di) as Information;
+    const saved = await this.diRepo.save(di);
     return { information_id: saved.information_id };
   }
 }
-
-
