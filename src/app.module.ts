@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { ConsultingsModule } from './v1/consultings/consultings.module';
 import { AuthModule } from './v1/auth/auth.module';
 import { InformationModule } from './v1/information/information.module';
+import { ChatModule } from './v1/chat/chat.module';
 
 @Module({
   imports: [
@@ -14,22 +15,24 @@ import { InformationModule } from './v1/information/information.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    // TypeORM 데이터베이스 설정 (AWS RDS 전용)
+    // TypeORM 데이터베이스 설정
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT!),
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_DATABASE,
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT || '5432'),
+      username: process.env.DB_USERNAME || 'postgres',
+      password: process.env.DB_PASSWORD || 'password',
+      database: process.env.DB_DATABASE || 'youturn_dev',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: process.env.NODE_ENV === 'development',
       logging: process.env.NODE_ENV === 'development',
-      ssl: { rejectUnauthorized: false }, // AWS RDS SSL 필수
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      dropSchema: false, // 스키마 삭제 방지
     }),
     ConsultingsModule,
     AuthModule,
     InformationModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
