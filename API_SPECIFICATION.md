@@ -135,7 +135,7 @@ POST /v1/information
 
 ### 1. 자동 컨설팅 생성 (LLM 연동) ⭐
 ```http
-POST /v1/consulting/generate
+POST /v1/consultings/generate
 ```
 
 **Request Body:**
@@ -163,9 +163,38 @@ POST /v1/consulting/generate
 }
 ```
 
-### 2. 컨설팅 조회
+### 2. 사용자별 컨설팅 목록 조회 (컨설팅 기록 화면)
 ```http
-GET /v1/consulting/:id
+GET /v1/consultings/user/:user_id
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "consulting_id": 3,
+      "title": "컨설팅 요약",
+      "created_at": "2025-09-02T00:00:00.000Z",
+      "preferred_crops": "토마토",
+      "preferred_region": "경기도"
+    },
+    {
+      "consulting_id": 2,
+      "title": "컨설팅 요약",
+      "created_at": "2025-08-02T00:00:00.000Z",
+      "preferred_crops": "상추",
+      "preferred_region": "전라도"
+    }
+  ],
+  "message": "사용자 컨설팅 목록을 성공적으로 조회했습니다."
+}
+```
+
+### 3. 컨설팅 상세 조회 ("더보기" 클릭 시)
+```http
+GET /v1/consultings/:id
 ```
 
 **Response:**
@@ -174,35 +203,21 @@ GET /v1/consulting/:id
   "success": true,
   "data": {
     "consulting_id": 1,
-    "information_id": 1,
-    "content": "# 홍길동님 컨설팅 결과\n...",
-    "created_at": "2025-08-23T14:30:00.000Z",
-    "updated_at": "2025-08-23T14:30:00.000Z"
+    "user_info": {
+      "budget": 50000000,
+      "preferred_crops": "토마토, 상추",
+      "preferred_region": "경기도 화성시",
+      "farming_experience": 0
+    },
+    "consulting_result": "# 홍길동님 컨설팅 결과\n..."
   },
   "message": "컨설팅 정보를 성공적으로 조회했습니다."
 }
 ```
 
-### 3. 컨설팅 결과만 조회
-```http
-GET /v1/consulting/:id/result
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "consulting_id": 1,
-    "content": "# 홍길동님 컨설팅 결과\n- 분석일시: 2025년 8월 23일\n- 컨설팅 ID: CONSULTING-000001\n\n## 1. 추천 지역\n...(마크다운 형식)"
-  },
-  "message": "컨설팅 결과를 성공적으로 조회했습니다."
-}
-```
-
 ### 4. 컨설팅 재추천 (재생성) ⭐
 ```http
-POST /v1/consulting/:id/regenerate
+POST /v1/consultings/:id/regenerate
 ```
 
 **Request Body:**
@@ -234,14 +249,14 @@ POST /v1/consulting/:id/regenerate
 
 ### 5. 컨설팅 삭제
 ```http
-DELETE /v1/consulting/:id
+DELETE /v1/consultings/:id
 ```
 
 **Response:** `204 No Content`
 
 ### 6. 수동 컨설팅 생성 (백업용)
 ```http
-POST /v1/consulting
+POST /v1/consultings
 ```
 
 **Request Body:**
@@ -256,16 +271,16 @@ POST /v1/consulting
 
 ## 💬 채팅 (Chat)
 
-### 1. LLM에 프롬프트 전송 ⭐
+### 1. LLM에 프롬프트 전송 (JWT 인증 필요) ⭐
 ```http
 POST /v1/chat/send
+Authorization: Bearer {accessToken}
 ```
 
 **Request Body:**
 ```json
 {
   "prompt": "농업에 대해 궁금한 것이 있어요. 토마토 재배 시기는 언제인가요?",
-  "userId": "user123",
   "model": "gpt-oss:20b"
 }
 ```
@@ -279,26 +294,25 @@ POST /v1/chat/send
     "prompt": "농업에 대해 궁금한 것이 있어요. 토마토 재배 시기는 언제인가요?",
     "response": "토마토는 일반적으로 봄(3-4월)에 파종하여...",
     "model": "gpt-oss:20b",
-    "userId": "user123",
     "status": "completed",
-    "created_at": "2025-08-23T14:30:00.000Z"
+    "responseTime": 1250,
+    "createdAt": "2025-08-23T14:30:00.000Z"
   },
   "message": "LLM 응답을 성공적으로 받았습니다."
 }
 ```
 
 **필드 설명:**
-- `prompt`: 최대 5000자
-- `userId`: 선택사항
-- `model`: 기본값 `"gpt-oss:20b"`
+- `prompt`: 최대 5000자 (필수)
+- `model`: 기본값 `"gpt-oss:20b"` (선택)
 
-### 2. 채팅 기록 조회
+### 2. 내 채팅 기록 조회 (JWT 인증 필요)
 ```http
-GET /v1/chat/history?userId={userId}&limit={limit}
+GET /v1/chat/history?limit={limit}
+Authorization: Bearer {accessToken}
 ```
 
 **Query Parameters:**
-- `userId` (optional): 특정 사용자의 채팅 기록
 - `limit` (optional): 조회할 개수 (기본값: 20)
 
 **Response:**
@@ -307,13 +321,13 @@ GET /v1/chat/history?userId={userId}&limit={limit}
   "success": true,
   "data": [
     {
-      "id": "uuid-1",
+      "id": "uuid-1", 
       "prompt": "농업에 대해 궁금해요",
       "response": "농업에 대한 답변...",
       "model": "gpt-oss:20b",
-      "userId": "user123",
       "status": "completed",
-      "created_at": "2025-08-23T14:30:00.000Z"
+      "responseTime": 1250,
+      "createdAt": "2025-08-23T14:30:00.000Z"
     }
   ],
   "message": "채팅 기록을 성공적으로 조회했습니다.",
@@ -321,9 +335,10 @@ GET /v1/chat/history?userId={userId}&limit={limit}
 }
 ```
 
-### 3. 특정 채팅 조회
+### 3. 내 특정 채팅 조회 (JWT 인증 필요)
 ```http
 GET /v1/chat/:id
+Authorization: Bearer {accessToken}
 ```
 
 **Response:**
@@ -335,9 +350,9 @@ GET /v1/chat/:id
     "prompt": "농업에 대해 궁금해요",
     "response": "농업에 대한 답변...",
     "model": "gpt-oss:20b",
-    "userId": "user123",
     "status": "completed",
-    "created_at": "2025-08-23T14:30:00.000Z"
+    "responseTime": 1250,
+    "createdAt": "2025-08-23T14:30:00.000Z"
   },
   "message": "채팅을 성공적으로 조회했습니다."
 }
@@ -416,7 +431,7 @@ GET /v1/chat/health/check
 {
   "statusCode": 400,
   "timestamp": "2025-08-23T14:30:00.000Z",
-  "path": "/v1/consulting/generate",
+  "path": "/v1/consultings/generate",
   "message": "잘못된 요청입니다."
 }
 ```
@@ -448,7 +463,7 @@ GET /v1/chat/health/check
 
 3. **자동 컨설팅 생성**
    ```bash
-   POST /v1/consulting/generate
+   POST /v1/consultings/generate
    ```
 
 4. **컨설팅 결과 확인**
@@ -458,7 +473,7 @@ GET /v1/chat/health/check
 
 5. **추가 요구사항으로 재추천**
    ```bash
-   POST /v1/consulting/1/regenerate
+   POST /v1/consultings/1/regenerate
    ```
 
 6. **농업 관련 질문하기**
