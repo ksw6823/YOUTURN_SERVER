@@ -41,7 +41,7 @@ export class ChatService {
     const chat = this.chatRepository.create({
       prompt: chatRequest.prompt,
       model: chatRequest.model || 'gpt-oss:20b',
-      userId: chatRequest.userId,
+      user: chatRequest.user_id ? { user_id: chatRequest.user_id } : undefined,
       status: 'pending',
       response: '',
       responseTime: 0,
@@ -163,22 +163,18 @@ export class ChatService {
   }
 
   /**
-   * 채팅 기록 조회
+   * 특정 사용자의 채팅 기록 조회
    */
   async getChatHistory(
-    userId?: string,
+    user_id: number,
     limit: number = 20,
   ): Promise<ChatResponseDto[]> {
-    const queryBuilder = this.chatRepository.createQueryBuilder('chat');
-
-    if (userId) {
-      queryBuilder.where('chat.userId = :userId', { userId });
-    }
-
-    const chats = await queryBuilder
-      .orderBy('chat.createdAt', 'DESC')
-      .limit(limit)
-      .getMany();
+    const chats = await this.chatRepository.find({
+      where: { user: { user_id } },
+      order: { createdAt: 'DESC' },
+      take: limit,
+      relations: ['user'],
+    });
 
     return chats.map((chat) => new ChatResponseDto(chat));
   }

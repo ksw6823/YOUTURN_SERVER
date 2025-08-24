@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, MaxLength } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, MaxLength, IsNumber } from 'class-validator';
 
 export class ChatRequestDto {
   @IsString()
@@ -7,8 +7,8 @@ export class ChatRequestDto {
   prompt: string;
 
   @IsOptional()
-  @IsString()
-  userId?: string;
+  @IsNumber()
+  user_id?: number;
 
   @IsOptional()
   @IsString()

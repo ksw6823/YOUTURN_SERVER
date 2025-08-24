@@ -9,7 +9,10 @@ import {
   HttpStatus,
   ValidationPipe,
   Logger,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ChatService } from './chat.service';
 import { ChatRequestDto } from './dto/chat-request.dto';
 import { ChatResponseDto } from './dto/chat-response.dto';
@@ -21,12 +24,16 @@ export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
   /**
-   * LLM에 프롬프트 전송하고 응답받기
+   * LLM에 프롬프트 전송하고 응답받기 (JWT 인증 필요)
    * POST /v1/chat/send
    */
   @Post('send')
+  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async sendPrompt(@Body(ValidationPipe) chatRequest: ChatRequestDto): Promise<{
+  async sendPrompt(
+    @Body(ValidationPipe) chatRequest: ChatRequestDto,
+    @Request() req: any,
+  ): Promise<{
     success: boolean;
     data: ChatResponseDto;
     message: string;
@@ -36,6 +43,10 @@ export class ChatController {
     );
 
     try {
+      // JWT에서 사용자 정보 추출
+      const user_id = req.user.user_id;
+      chatRequest.user_id = user_id;
+      
       const result = await this.chatService.sendPromptToLLM(chatRequest);
 
       return {
@@ -52,13 +63,14 @@ export class ChatController {
   }
 
   /**
-   * 채팅 기록 조회
-   * GET /v1/chat/history?userId=xxx&limit=20
+   * 내 채팅 기록 조회 (JWT 인증 필요)
+   * GET /v1/chat/history?limit=20
    */
   @Get('history')
+  @UseGuards(JwtAuthGuard)
   async getChatHistory(
-    @Query('userId') userId?: string,
     @Query('limit') limit: string = '20',
+    @Request() req: any,
   ): Promise<{
     success: boolean;
     data: ChatResponseDto[];
@@ -66,10 +78,12 @@ export class ChatController {
     total: number;
   }> {
     const limitNum = parseInt(limit, 10) || 20;
+    // JWT에서 사용자 정보 추출 (보안!)
+    const user_id = req.user.user_id;
 
-    this.logger.log(`채팅 기록 조회: userId=${userId}, limit=${limitNum}`);
+    this.logger.log(`내 채팅 기록 조회: user_id=${user_id}, limit=${limitNum}`);
 
-    const chatHistory = await this.chatService.getChatHistory(userId, limitNum);
+    const chatHistory = await this.chatService.getChatHistory(user_id, limitNum);
 
     return {
       success: true,
@@ -80,10 +94,11 @@ export class ChatController {
   }
 
   /**
-   * 특정 채팅 조회
+   * 내 특정 채팅 조회 (JWT 인증 필요)
    * GET /v1/chat/:id
    */
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   async getChatById(@Param('id') id: string): Promise<{
     success: boolean;
     data: ChatResponseDto;

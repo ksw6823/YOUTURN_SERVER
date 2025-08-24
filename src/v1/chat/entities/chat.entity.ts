@@ -4,7 +4,10 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { User } from '../../auth/entities/user.entity';
 
 @Entity('chats')
 export class Chat {
@@ -20,8 +23,9 @@ export class Chat {
   @Column({ type: 'varchar', length: 50 })
   model: string;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  userId?: string;
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'user_id', referencedColumnName: 'user_id' })
+  user?: User;
 
   @Column({ type: 'varchar', length: 50 })
   status: 'pending' | 'completed' | 'failed';
