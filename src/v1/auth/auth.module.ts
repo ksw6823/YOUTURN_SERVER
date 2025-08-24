@@ -21,7 +21,7 @@ import { User } from './entities/user.entity';
           configService.get<string>('JWT_ACCESS_SECRET') || 'dev_access_secret',
         signOptions: {
           expiresIn:
-            configService.get<string>('JWT_ACCESS_EXPIRES_IN') || '15m',
+            configService.get<string>('JWT_ACCESS_EXPIRES_IN') || '24h',
         },
       }),
     }),
