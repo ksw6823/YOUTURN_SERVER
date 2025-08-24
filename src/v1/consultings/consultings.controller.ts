@@ -14,7 +14,7 @@ import { ConsultingsService } from './consultings.service';
 import { CreateConsultingDto } from './dto/create-consulting.dto';
 import { GenerateConsultingDto } from './dto/generate-consulting.dto';
 
-@Controller('v1/consulting')
+@Controller('v1/consultings')
 export class ConsultingsController {
   private readonly logger = new Logger(ConsultingsController.name);
 
@@ -55,16 +55,18 @@ export class ConsultingsController {
   }
 
   /**
-   * 컨설팅 결과 조회
-   * GET /v1/consultings/:id/result
+   * 사용자별 컨설팅 목록 조회
+   * GET /v1/consultings/user/:user_id
    */
-  @Get(':id/result')
-  async getConsultingResult(@Param('id') id: string) {
-    this.logger.log(`컨설팅 결과 조회 요청: consulting_id=${id}`);
+  @Get('user/:user_id')
+  async getConsultingsByUser(@Param('user_id') user_id: string) {
+    this.logger.log(`사용자별 컨설팅 목록 조회: user_id=${user_id}`);
 
-    const consulting_id = parseInt(id, 10);
-    return this.consultingsService.getConsultingResult(consulting_id);
+    const userId = parseInt(user_id, 10);
+    return this.consultingsService.getConsultingsByUser(userId);
   }
+
+
 
   /**
    * 컨설팅 삭제

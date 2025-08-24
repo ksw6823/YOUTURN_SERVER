@@ -457,27 +457,28 @@ ${additionalRequirements || '사용자가 더 나은 대안을 원합니다.'}
     };
   }
 
-  /**
-   * 컨설팅 결과만 조회
-   */
-  async getConsultingResult(consulting_id: number) {
-    const consulting = await this.consultingRepo.findOne({
-      where: { consulting_id: consulting_id },
-    });
 
-    if (!consulting) {
-      throw new NotFoundException('컨설팅 정보를 찾을 수 없습니다.');
-    }
+
+  /**
+   * 사용자별 컨설팅 목록 조회 (컨설팅 기록 화면용)
+   */
+  async getConsultingsByUser(user_id: number) {
+    const consultings = await this.consultingRepo.find({
+      where: { information_id: { user: { user_id } } },
+      relations: ['information_id'],
+      order: { created_at: 'DESC' },
+    });
 
     return {
       success: true,
-      data: {
+      data: consultings.map(consulting => ({
         consulting_id: consulting.consulting_id,
-        result: consulting.content,
+        title: '컨설팅 요약',
         created_at: consulting.created_at,
-        updated_at: consulting.updated_at,
-      },
-      message: '컨설팅 결과를 성공적으로 조회했습니다.',
+        preferred_crops: consulting.information_id.preferred_crops,
+        preferred_region: consulting.information_id.preferred_region,
+      })),
+      message: '사용자 컨설팅 목록을 성공적으로 조회했습니다.',
     };
   }
 
