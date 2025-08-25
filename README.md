@@ -28,7 +28,7 @@ YOUTURN은 LLM(Large Language Model)을 활용하여 개인 맞춤형 농업 컨
 ### Backend
 - **Framework**: NestJS (Node.js)
 - **Language**: TypeScript
-- **Database**: PostgreSQL (AWS RDS)
+- **Database**: PostgreSQL
 - **ORM**: TypeORM
 - **Authentication**: JWT + Passport
 - **Validation**: class-validator, class-transformer
@@ -40,7 +40,6 @@ YOUTURN은 LLM(Large Language Model)을 활용하여 개인 맞춤형 농업 컨
 ### Infrastructure
 - **Cloud**: AWS (EC2, RDS)
 - **Process Manager**: PM2
-- **Containerization**: Docker & Docker Compose
 - **Package Manager**: Yarn
 
 ## 📁 프로젝트 구조
@@ -73,7 +72,6 @@ YOUTURN_SERVER/
 │           ├── dto/               # 채팅 DTO
 │           └── entities/          # Chat 엔티티
 ├── API_SPECIFICATION.md           # API 명세서
-├── docker-compose.yml             # 개발 환경 설정
 ├── ecosystem.config.js            # PM2 프로덕션 설정
 └── deploy.sh                      # AWS 배포 스크립트
 ```
@@ -83,7 +81,7 @@ YOUTURN_SERVER/
 ### 📋 사전 요구사항
 - Node.js 18+ 
 - Yarn
-- PostgreSQL (로컬 개발) 또는 Docker
+- PostgreSQL
 - LLM 서버 (Ollama)
 
 ### 🛠️ 설치 및 실행
@@ -126,14 +124,8 @@ YOUTURN_SERVER/
    ```
 
 4. **데이터베이스 설정**
-   
-   **Option A: Docker 사용 (권장)**
    ```bash
-   docker-compose up -d postgres
-   ```
-   
-   **Option B: 로컬 PostgreSQL**
-   ```bash
+   # PostgreSQL 데이터베이스 생성
    createdb youturn_dev
    ```
 
@@ -149,7 +141,7 @@ YOUTURN_SERVER/
 ### 🔐 인증 (Authentication)
 - `POST /v1/auth/signup` - 회원가입
 - `POST /v1/auth/login` - 로그인  
-- `POST /v1/auth/me` - 사용자 정보 확인
+- `POST /v1/auth/me` - 사용자 정보 확인 (JWT 필요)
 
 ### 📝 농업 정보 (Information)
 - `POST /v1/information` - 농업 정보 등록
@@ -160,6 +152,7 @@ YOUTURN_SERVER/
 - `GET /v1/consultings/:id` - 컨설팅 상세 조회
 - `POST /v1/consultings/:id/regenerate` - 컨설팅 재생성
 - `DELETE /v1/consultings/:id` - 컨설팅 삭제
+- `POST /v1/consultings` - 수동 컨설팅 생성 (백업용)
 
 ### 💬 채팅 (Chat)
 - `POST /v1/chat/send` - LLM 채팅 (JWT 필요)
@@ -230,16 +223,6 @@ Chat (채팅)
    ./deploy.sh
    ```
 
-### Docker 배포
-
-```bash
-# 프로덕션 이미지 빌드
-docker build -t youturn-server .
-
-# 컨테이너 실행
-docker run -d -p 3000:3000 --env-file .env.production youturn-server
-```
-
 ## 🔧 개발 가이드
 
 ### 새로운 모듈 추가
@@ -280,7 +263,6 @@ yarn test:e2e
 - **개인정보 보호**: 사용자별 데이터 격리
 - **입력값 검증**: class-validator 활용
 - **SQL 인젝션 방지**: TypeORM Parameterized Query
-- **CORS 설정**: 프론트엔드 도메인 제한
 
 ## 🔍 모니터링
 
@@ -296,23 +278,4 @@ curl http://localhost:3000
 # LLM 서버 연결 확인  
 curl http://localhost:3000/v1/chat/health/check
 ```
-
-## 🤝 기여하기
-
-1. 이 저장소를 Fork합니다
-2. 새로운 기능 브랜치를 생성합니다 (`git checkout -b feature/AmazingFeature`)
-3. 변경사항을 커밋합니다 (`git commit -m 'Add some AmazingFeature'`)
-4. 브랜치에 Push합니다 (`git push origin feature/AmazingFeature`)
-5. Pull Request를 열어주세요
-
-## 📄 라이선스
-
-이 프로젝트는 MIT 라이선스 하에 있습니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
-
-## 📞 문의
-
-프로젝트에 대한 문의사항이 있으시면 이슈를 생성해주세요.
-
----
-
 **YOUTURN - 농업의 새로운 전환점** 🌱
