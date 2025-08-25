@@ -111,10 +111,8 @@ export class ChatService {
     model: string = 'gpt-oss:20b',
   ): Promise<LlmServerResponseDto> {
     try {
-      // 간결한 답변을 위한 프롬프트 지시사항 추가 (마크다운 형식 방지)
-      const enhancedPrompt = `${prompt}
-
-응답시 다음 사항을 필수로 준수해주세요: 300자 이내로 간결하게 답변하고, 핵심 내용만 포함하여 명확하게 설명하며, 불필요한 반복이나 장황한 설명은 피하고, 마크다운 형식(#, *, - 등)을 사용하지 말고 일반 텍스트로만 답변해주세요.`;
+      // 간결한 답변을 위한 프롬프트 지시사항 추가
+      const enhancedPrompt = prompt + '\n\n간결하고 명확하게 답변해주세요.';
 
       const requestBody = {
         model: model,
@@ -122,16 +120,16 @@ export class ChatService {
         stream: false,
       };
 
-      this.logger.log(`LLM 서버 요청: ${this.LLM_SERVER_URL}/api/generate`);
-      this.logger.log(`프롬프트 길이: ${enhancedPrompt.length}자`);
-      this.logger.log(`모델: ${requestBody.model}`);
+      this.logger.log('LLM 서버 요청: ' + this.LLM_SERVER_URL + '/api/generate');
+      this.logger.log('프롬프트 길이: ' + enhancedPrompt.length + '자');
+      this.logger.log('모델: ' + requestBody.model);
 
       const response = await firstValueFrom(
         this.httpService.post(
-          `${this.LLM_SERVER_URL}/api/generate`,
+          this.LLM_SERVER_URL + '/api/generate',
           requestBody,
           {
-            timeout: 30000, // 30초 타임아웃
+            timeout: 30000,
             headers: {
               'Content-Type': 'application/json; charset=utf-8',
               'Accept-Charset': 'utf-8',
@@ -164,8 +162,8 @@ export class ChatService {
 
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(`LLM 서버 호출 실패: ${errorMessage}`);
-      throw new Error(`LLM 서버 통신 실패: ${errorMessage}`);
+      this.logger.error('LLM 서버 호출 실패: ' + errorMessage);
+      throw new Error('LLM 서버 통신 실패: ' + errorMessage);
     }
   }
 
