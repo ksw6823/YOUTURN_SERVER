@@ -128,13 +128,20 @@ export class ChatService {
           num_predict: this.CHAT_MAX_TOKENS, // 최대 토큰으로 응답 제한
           temperature: 0.7, // 적절한 창의성 유지
           top_p: 0.9,
-          stop: ['\n\n\n', '#', '##', '###', '*', '-', '1.', '•'], // 마크다운 형식 및 과도한 줄바꿈 방지
+          stop: ['\n\n\n'], // 과도한 줄바꿈 방지
         },
       };
 
       this.logger.log(`LLM 서버 요청: ${this.LLM_SERVER_URL}/api/generate`);
       this.logger.log(`설정된 최대 토큰 수: ${this.CHAT_MAX_TOKENS}`);
-      this.logger.log(`요청 body: ${JSON.stringify(requestBody, null, 2)}`);
+      
+      // 로그 출력 시 에러 방지
+      try {
+        this.logger.log(`프롬프트 길이: ${enhancedPrompt.length}자`);
+        this.logger.log(`모델: ${requestBody.model}, num_predict: ${requestBody.options.num_predict}`);
+      } catch (logError) {
+        this.logger.warn('로그 출력 중 오류 발생');
+      }
 
       const response = await firstValueFrom(
         this.httpService.post(
