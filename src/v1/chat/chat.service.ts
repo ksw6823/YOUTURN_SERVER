@@ -17,7 +17,6 @@ import { ChatResponseDto, LlmServerResponseDto } from './dto/chat-response.dto';
 export class ChatService {
   private readonly logger = new Logger(ChatService.name);
   private readonly LLM_SERVER_URL: string;
-  private readonly CHAT_MAX_TOKENS: number;
 
   constructor(
     private readonly configService: ConfigService,
@@ -30,9 +29,6 @@ export class ChatService {
       throw new Error('LLM_SERVER_URL 환경변수 설정이 필요합니다.');
     }
     this.LLM_SERVER_URL = llmUrl;
-    
-    // 채팅 응답 최대 토큰 수 설정 (기본값: 100)
-    this.CHAT_MAX_TOKENS = this.configService.get<number>('CHAT_MAX_TOKENS') || 80;
   }
 
   /**
@@ -123,25 +119,12 @@ export class ChatService {
       const requestBody = {
         model: model,
         prompt: enhancedPrompt,
-        stream: false, // 스트리밍 비활성화로 전체 응답 받기
-        options: {
-          num_predict: this.CHAT_MAX_TOKENS, // 최대 토큰으로 응답 제한
-          temperature: 0.7, // 적절한 창의성 유지
-          top_p: 0.9,
-          stop: ['\n\n\n'], // 과도한 줄바꿈 방지
-        },
+        stream: false,
       };
 
       this.logger.log(`LLM 서버 요청: ${this.LLM_SERVER_URL}/api/generate`);
-      this.logger.log(`설정된 최대 토큰 수: ${this.CHAT_MAX_TOKENS}`);
-      
-      // 로그 출력 시 에러 방지
-      try {
-        this.logger.log(`프롬프트 길이: ${enhancedPrompt.length}자`);
-        this.logger.log(`모델: ${requestBody.model}, num_predict: ${requestBody.options.num_predict}`);
-      } catch (logError) {
-        this.logger.warn('로그 출력 중 오류 발생');
-      }
+      this.logger.log(`프롬프트 길이: ${enhancedPrompt.length}자`);
+      this.logger.log(`모델: ${requestBody.model}`);
 
       const response = await firstValueFrom(
         this.httpService.post(
