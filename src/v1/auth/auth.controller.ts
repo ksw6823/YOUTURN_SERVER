@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, UseGuards, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dtos/login.dto';
 import { SignupDto } from './dtos/signup.dto';
@@ -27,7 +27,12 @@ export class AuthController {
   @Post('me')
   @UseGuards(JwtAuthGuard)
   @HttpCode(200)
-  me() {
-    return { ok: true };
+  me(@Request() req: any) {
+    // JWT에서 사용자 정보 반환
+    return {
+      user_id: req.user.user_id,
+      login_id: req.user.login_id,
+      nickname: req.user.nickname,
+    };
   }
 }

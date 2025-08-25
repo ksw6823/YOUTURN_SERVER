@@ -17,6 +17,7 @@ import { ChatResponseDto, LlmServerResponseDto } from './dto/chat-response.dto';
 export class ChatService {
   private readonly logger = new Logger(ChatService.name);
   private readonly LLM_SERVER_URL: string;
+  private readonly CHAT_MAX_TOKENS: number;
 
   constructor(
     private readonly configService: ConfigService,
@@ -29,6 +30,9 @@ export class ChatService {
       throw new Error('LLM_SERVER_URL 환경변수 설정이 필요합니다.');
     }
     this.LLM_SERVER_URL = llmUrl;
+    
+    // 채팅 응답 최대 토큰 수 설정 (기본값: 200)
+    this.CHAT_MAX_TOKENS = this.configService.get<number>('CHAT_MAX_TOKENS') || 200;
   }
 
   /**
@@ -111,10 +115,24 @@ export class ChatService {
     model: string = 'gpt-oss:20b',
   ): Promise<LlmServerResponseDto> {
     try {
+      // 간결한 답변을 위한 프롬프트 지시사항 추가
+      const enhancedPrompt = `${prompt}
+
+답변 조건:
+- 300자 이내로 간결하게 답변해주세요
+- 핵심 내용만 포함하여 명확하게 설명해주세요
+- 불필요한 반복이나 장황한 설명은 피해주세요`;
+
       const requestBody = {
         model: model,
-        prompt: prompt,
+        prompt: enhancedPrompt,
         stream: false, // 스트리밍 비활성화로 전체 응답 받기
+        options: {
+          num_predict: this.CHAT_MAX_TOKENS, // 최대 토큰으로 응답 제한
+          temperature: 0.7, // 적절한 창의성 유지
+          top_p: 0.9,
+          stop: ['\n\n\n'], // 과도한 줄바꿈 방지
+        },
       };
 
       this.logger.log(`LLM 서버 요청: ${this.LLM_SERVER_URL}/api/generate`);

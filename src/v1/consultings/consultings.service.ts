@@ -99,18 +99,14 @@ export class ConsultingsService {
       );
       
       return {
-        success: true,
         consulting_id: savedConsulting.consulting_id,
-        data: {
-          user_info: {
-            budget: dictionaryInfo.budget,
-            preferred_crops: dictionaryInfo.preferred_crops,
-            preferred_region: dictionaryInfo.preferred_region,
-            farming_experience: dictionaryInfo.farming_experience,
-          },
-          consulting_result: consultingData,
+        user_info: {
+          budget: dictionaryInfo.budget,
+          preferred_crops: dictionaryInfo.preferred_crops,
+          preferred_region: dictionaryInfo.preferred_region,
+          farming_experience: dictionaryInfo.farming_experience,
         },
-        message: '농업 컨설팅이 성공적으로 완료되었습니다.',
+        consulting_result: consultingData,
       };
     } catch (error) {
       const errorMessage =
@@ -137,6 +133,11 @@ export class ConsultingsService {
         model: 'gpt-oss:20b',
         prompt: prompt,
         stream: false,
+        options: {
+          temperature: 0.7, // 적절한 창의성 유지
+          top_p: 0.9,
+          stop: ['\n\n\n\n'], // 과도한 줄바꿈 방지
+        },
       };
 
       // 인코딩 디버깅
@@ -249,6 +250,7 @@ export class ConsultingsService {
 2. 각 항목은 구체적이고 실용적인 내용으로 작성하세요
 3. 보유 자금과 경험을 고려한 현실적인 조언을 제공하세요
 4. 마크다운 형식을 정확히 지켜주세요
+5. 각 섹션은 상세하고 도움이 되는 정보를 포함해주세요
 
 답변:`;
   }
@@ -380,6 +382,7 @@ ${additionalRequirements || '사용자가 더 나은 대안을 원합니다.'}
 위의 이전 컨설팅 결과를 참고하되, 추가 요구사항을 반영하여 더 나은 컨설팅을 제공해주세요.
 이전 결과와 다른 관점이나 대안을 제시하되, 사용자의 기본 정보(자금, 경험 등)는 동일하게 고려해주세요.
 반드시 동일한 마크다운 형식을 유지해주세요.
+각 섹션은 상세하고 실용적인 내용으로 작성해주세요.
 
 답변:`;
 
@@ -395,6 +398,11 @@ ${additionalRequirements || '사용자가 더 나은 대안을 원합니다.'}
         model: 'gpt-oss:20b',
         prompt: prompt,
         stream: false,
+        options: {
+          temperature: 0.7, // 적절한 창의성 유지
+          top_p: 0.9,
+          stop: ['\n\n\n\n'], // 과도한 줄바꿈 방지
+        },
       };
 
       const response = await firstValueFrom(
@@ -442,18 +450,14 @@ ${additionalRequirements || '사용자가 더 나은 대안을 원합니다.'}
     }
     
     return {
-      success: true,
-      data: {
-        consulting_id: consulting.consulting_id,
-        user_info: {
-          budget: consulting.information_id.budget,
-          preferred_crops: consulting.information_id.preferred_crops,
-          preferred_region: consulting.information_id.preferred_region,
-          farming_experience: consulting.information_id.farming_experience,
-        },
-        consulting_result: consulting.content,
+      consulting_id: consulting.consulting_id,
+      user_info: {
+        budget: consulting.information_id.budget,
+        preferred_crops: consulting.information_id.preferred_crops,
+        preferred_region: consulting.information_id.preferred_region,
+        farming_experience: consulting.information_id.farming_experience,
       },
-      message: '컨설팅 정보를 성공적으로 조회했습니다.',
+      consulting_result: consulting.content,
     };
   }
 
@@ -469,17 +473,13 @@ ${additionalRequirements || '사용자가 더 나은 대안을 원합니다.'}
       order: { created_at: 'DESC' },
     });
 
-    return {
-      success: true,
-      data: consultings.map(consulting => ({
-        consulting_id: consulting.consulting_id,
-        title: '컨설팅 요약',
-        created_at: consulting.created_at,
-        preferred_crops: consulting.information_id.preferred_crops,
-        preferred_region: consulting.information_id.preferred_region,
-      })),
-      message: '사용자 컨설팅 목록을 성공적으로 조회했습니다.',
-    };
+    return consultings.map(consulting => ({
+      consulting_id: consulting.consulting_id,
+      title: '컨설팅 요약',
+      created_at: consulting.created_at,
+      preferred_crops: consulting.information_id.preferred_crops,
+      preferred_region: consulting.information_id.preferred_region,
+    }));
   }
 
   /**
@@ -547,22 +547,16 @@ ${additionalRequirements || '사용자가 더 나은 대안을 원합니다.'}
       this.logger.log(`컨설팅 재추천 완료: consulting_id=${consulting_id}`);
 
       return {
-        success: true,
         consulting_id: updatedConsulting.consulting_id,
-        data: {
-          user_info: {
-            budget: existingConsulting.information_id.budget,
-            preferred_crops: existingConsulting.information_id.preferred_crops,
-            preferred_region:
-              existingConsulting.information_id.preferred_region,
-            farming_experience:
-              existingConsulting.information_id.farming_experience,
-          },
-          previous_result: originalResult,
-          new_result: newConsultingData,
-          additional_requirements: additionalRequirements || null,
+        user_info: {
+          budget: existingConsulting.information_id.budget,
+          preferred_crops: existingConsulting.information_id.preferred_crops,
+          preferred_region: existingConsulting.information_id.preferred_region,
+          farming_experience: existingConsulting.information_id.farming_experience,
         },
-        message: '컨설팅 재추천이 성공적으로 완료되었습니다.',
+        previous_result: originalResult,
+        new_result: newConsultingData,
+        additional_requirements: additionalRequirements || null,
       };
     } catch (error) {
       const errorMessage =
