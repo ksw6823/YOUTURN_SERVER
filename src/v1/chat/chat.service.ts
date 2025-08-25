@@ -31,8 +31,8 @@ export class ChatService {
     }
     this.LLM_SERVER_URL = llmUrl;
     
-    // 채팅 응답 최대 토큰 수 설정 (기본값: 200)
-    this.CHAT_MAX_TOKENS = this.configService.get<number>('CHAT_MAX_TOKENS') || 200;
+    // 채팅 응답 최대 토큰 수 설정 (기본값: 100)
+    this.CHAT_MAX_TOKENS = this.configService.get<number>('CHAT_MAX_TOKENS') || 80;
   }
 
   /**
@@ -115,13 +115,10 @@ export class ChatService {
     model: string = 'gpt-oss:20b',
   ): Promise<LlmServerResponseDto> {
     try {
-      // 간결한 답변을 위한 프롬프트 지시사항 추가
+      // 간결한 답변을 위한 프롬프트 지시사항 추가 (마크다운 형식 방지)
       const enhancedPrompt = `${prompt}
 
-답변 조건:
-- 300자 이내로 간결하게 답변해주세요
-- 핵심 내용만 포함하여 명확하게 설명해주세요
-- 불필요한 반복이나 장황한 설명은 피해주세요`;
+응답시 다음 사항을 필수로 준수해주세요: 300자 이내로 간결하게 답변하고, 핵심 내용만 포함하여 명확하게 설명하며, 불필요한 반복이나 장황한 설명은 피하고, 마크다운 형식(#, *, - 등)을 사용하지 말고 일반 텍스트로만 답변해주세요.`;
 
       const requestBody = {
         model: model,
@@ -131,11 +128,13 @@ export class ChatService {
           num_predict: this.CHAT_MAX_TOKENS, // 최대 토큰으로 응답 제한
           temperature: 0.7, // 적절한 창의성 유지
           top_p: 0.9,
-          stop: ['\n\n\n'], // 과도한 줄바꿈 방지
+          stop: ['\n\n\n', '#', '##', '###', '*', '-', '1.', '•'], // 마크다운 형식 및 과도한 줄바꿈 방지
         },
       };
 
       this.logger.log(`LLM 서버 요청: ${this.LLM_SERVER_URL}/api/generate`);
+      this.logger.log(`설정된 최대 토큰 수: ${this.CHAT_MAX_TOKENS}`);
+      this.logger.log(`요청 body: ${JSON.stringify(requestBody, null, 2)}`);
 
       const response = await firstValueFrom(
         this.httpService.post(
