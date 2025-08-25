@@ -33,11 +33,7 @@ export class ChatController {
   async sendPrompt(
     @Body(ValidationPipe) chatRequest: ChatRequestDto,
     @Request() req: any,
-  ): Promise<{
-    success: boolean;
-    data: ChatResponseDto;
-    message: string;
-  }> {
+  ): Promise<ChatResponseDto> {
     this.logger.log(
       `채팅 요청 받음: ${chatRequest.prompt.substring(0, 100)}...`,
     );
@@ -47,13 +43,7 @@ export class ChatController {
       const user_id = req.user.user_id;
       chatRequest.user_id = user_id;
       
-      const result = await this.chatService.sendPromptToLLM(chatRequest);
-
-      return {
-        success: true,
-        data: result,
-        message: 'LLM 응답을 성공적으로 받았습니다.',
-      };
+      return await this.chatService.sendPromptToLLM(chatRequest);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
@@ -71,26 +61,14 @@ export class ChatController {
   async getChatHistory(
     @Query('limit') limit: string = '20',
     @Request() req: any,
-  ): Promise<{
-    success: boolean;
-    data: ChatResponseDto[];
-    message: string;
-    total: number;
-  }> {
+  ): Promise<ChatResponseDto[]> {
     const limitNum = parseInt(limit, 10) || 20;
     // JWT에서 사용자 정보 추출 (보안!)
     const user_id = req.user.user_id;
 
     this.logger.log(`내 채팅 기록 조회: user_id=${user_id}, limit=${limitNum}`);
 
-    const chatHistory = await this.chatService.getChatHistory(user_id, limitNum);
-
-    return {
-      success: true,
-      data: chatHistory,
-      message: '채팅 기록을 성공적으로 조회했습니다.',
-      total: chatHistory.length,
-    };
+    return await this.chatService.getChatHistory(user_id, limitNum);
   }
 
   /**
@@ -99,20 +77,10 @@ export class ChatController {
    */
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  async getChatById(@Param('id') id: string): Promise<{
-    success: boolean;
-    data: ChatResponseDto;
-    message: string;
-  }> {
+  async getChatById(@Param('id') id: string): Promise<ChatResponseDto> {
     this.logger.log(`특정 채팅 조회: ${id}`);
 
-    const chat = await this.chatService.getChatById(id);
-
-    return {
-      success: true,
-      data: chat,
-      message: '채팅을 성공적으로 조회했습니다.',
-    };
+    return await this.chatService.getChatById(id);
   }
 
   /**
@@ -121,8 +89,7 @@ export class ChatController {
    */
   @Get('health/check')
   async healthCheck(): Promise<{
-    success: boolean;
-    message: string;
+    status: string;
     timestamp: string;
   }> {
     this.logger.log('LLM 서버 상태 확인 요청');
@@ -130,22 +97,20 @@ export class ChatController {
     // 간단한 프롬프트로 LLM 서버 상태 확인
     try {
       const testRequest = new ChatRequestDto();
-      testRequest.prompt = 'Hello';
+      testRequest.prompt = '안녕하세요. 간단히 "OK"라고 답변해주세요.';
       testRequest.model = 'gpt-oss:20b';
 
       await this.chatService.sendPromptToLLM(testRequest);
 
       return {
-        success: true,
-        message: 'LLM 서버가 정상적으로 작동중입니다.',
+        status: 'healthy',
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
       return {
-        success: false,
-        message: `LLM 서버 연결 실패: ${errorMessage}`,
+        status: 'unhealthy',
         timestamp: new Date().toISOString(),
       };
     }
