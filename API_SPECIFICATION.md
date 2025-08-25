@@ -71,7 +71,9 @@ Authorization: Bearer {accessToken}
 **Response:**
 ```json
 {
-  "ok": true
+  "user_id": 1,
+  "login_id": "user123",
+  "nickname": "홍길동"
 }
 ```
 
@@ -104,23 +106,7 @@ POST /v1/information
 **Response:**
 ```json
 {
-  "success": true,
-  "data": {
-    "information_id": 1,
-    "user_id": 1,
-    "gender": "MALE",
-    "birth_date": "1990-01-01",
-    "address": "경기도 안양시",
-    "occupation": "직장인",
-    "budget": 50000000,
-    "family_member": "부부+자녀1명",
-    "preferred_crops": "토마토, 상추",
-    "preferred_region": "경기도 화성시",
-    "farming_experience": 0,
-    "etc": "친환경 농업에 관심이 많습니다.",
-    "created_at": "2025-08-23T14:30:00.000Z"
-  },
-  "message": "농업 정보가 성공적으로 생성되었습니다."
+  "information_id": 1
 }
 ```
 
@@ -148,18 +134,14 @@ POST /v1/consultings/generate
 **Response:**
 ```json
 {
-  "success": true,
   "consulting_id": 1,
-  "data": {
-    "user_info": {
-      "budget": 50000000,
-      "preferred_crops": "토마토, 상추",
-      "preferred_region": "경기도 화성시",
-      "farming_experience": 0
-    },
-    "consulting_result": "# 홍길동님 컨설팅 결과\n- 분석일시: 2025년 8월 23일\n- 컨설팅 ID: CONSULTING-000001\n\n## 1. 추천 지역\n...(마크다운 형식의 상세 컨설팅 내용)"
+  "user_info": {
+    "budget": 50000000,
+    "preferred_crops": "토마토, 상추",
+    "preferred_region": "경기도 화성시",
+    "farming_experience": 0
   },
-  "message": "컨설팅이 성공적으로 생성되었습니다."
+  "consulting_result": "# 홍길동님 컨설팅 결과\n- 분석일시: 2025년 8월 23일\n- 컨설팅 ID: CONSULTING-000001\n\n## 1. 추천 지역\n...(마크다운 형식의 상세 컨설팅 내용)"
 }
 ```
 
@@ -170,26 +152,22 @@ GET /v1/consultings/user/:user_id
 
 **Response:**
 ```json
-{
-  "success": true,
-  "data": [
-    {
-      "consulting_id": 3,
-      "title": "컨설팅 요약",
-      "created_at": "2025-09-02T00:00:00.000Z",
-      "preferred_crops": "토마토",
-      "preferred_region": "경기도"
-    },
-    {
-      "consulting_id": 2,
-      "title": "컨설팅 요약",
-      "created_at": "2025-08-02T00:00:00.000Z",
-      "preferred_crops": "상추",
-      "preferred_region": "전라도"
-    }
-  ],
-  "message": "사용자 컨설팅 목록을 성공적으로 조회했습니다."
-}
+[
+  {
+    "consulting_id": 3,
+    "title": "컨설팅 요약",
+    "created_at": "2025-09-02T00:00:00.000Z",
+    "preferred_crops": "토마토",
+    "preferred_region": "경기도"
+  },
+  {
+    "consulting_id": 2,
+    "title": "컨설팅 요약",
+    "created_at": "2025-08-02T00:00:00.000Z",
+    "preferred_crops": "상추",
+    "preferred_region": "전라도"
+  }
+]
 ```
 
 ### 3. 컨설팅 상세 조회 ("더보기" 클릭 시)
@@ -200,18 +178,14 @@ GET /v1/consultings/:id
 **Response:**
 ```json
 {
-  "success": true,
-  "data": {
-    "consulting_id": 1,
-    "user_info": {
-      "budget": 50000000,
-      "preferred_crops": "토마토, 상추",
-      "preferred_region": "경기도 화성시",
-      "farming_experience": 0
-    },
-    "consulting_result": "# 홍길동님 컨설팅 결과\n..."
+  "consulting_id": 1,
+  "user_info": {
+    "budget": 50000000,
+    "preferred_crops": "토마토, 상추",
+    "preferred_region": "경기도 화성시",
+    "farming_experience": 0
   },
-  "message": "컨설팅 정보를 성공적으로 조회했습니다."
+  "consulting_result": "# 홍길동님 컨설팅 결과\n..."
 }
 ```
 
@@ -227,25 +201,25 @@ POST /v1/consultings/:id/regenerate
 }
 ```
 
+**참고:** `additional_requirements`는 선택적(optional) 필드입니다.
+
 **Response:**
 ```json
 {
-  "success": true,
   "consulting_id": 1,
-  "data": {
-    "user_info": {
-      "budget": 50000000,
-      "preferred_crops": "토마토, 상추",
-      "preferred_region": "경기도 화성시",
-      "farming_experience": 0
-    },
-    "previous_result": "# 이전 컨설팅 결과...",
-    "new_result": "# 홍길동님 재컨설팅 결과\n...(새로운 마크다운 형식)",
-    "additional_requirements": "유기농 인증을 받을 수 있는 방법도 포함해주세요."
+  "user_info": {
+    "budget": 50000000,
+    "preferred_crops": "토마토, 상추",
+    "preferred_region": "경기도 화성시",
+    "farming_experience": 0
   },
-  "message": "컨설팅 재추천이 성공적으로 완료되었습니다."
+  "previous_result": "# 이전 컨설팅 결과...",
+  "new_result": "# 홍길동님 재컨설팅 결과\n...(새로운 마크다운 형식)",
+  "additional_requirements": "유기농 인증을 받을 수 있는 방법도 포함해주세요."
 }
 ```
+
+**참고:** `additional_requirements`는 요청하지 않은 경우 `null`로 반환됩니다.
 
 ### 5. 컨설팅 삭제
 ```http
@@ -264,6 +238,13 @@ POST /v1/consultings
 {
   "information_id": 1,
   "content": "수동으로 작성한 컨설팅 내용..."
+}
+```
+
+**Response:**
+```json
+{
+  "consulting_id": 1
 }
 ```
 
@@ -288,17 +269,13 @@ Authorization: Bearer {accessToken}
 **Response:**
 ```json
 {
-  "success": true,
-  "data": {
-    "id": "uuid-v4-string",
-    "prompt": "농업에 대해 궁금한 것이 있어요. 토마토 재배 시기는 언제인가요?",
-    "response": "토마토는 일반적으로 봄(3-4월)에 파종하여...",
-    "model": "gpt-oss:20b",
-    "status": "completed",
-    "responseTime": 1250,
-    "createdAt": "2025-08-23T14:30:00.000Z"
-  },
-  "message": "LLM 응답을 성공적으로 받았습니다."
+  "id": "uuid-v4-string",
+  "prompt": "농업에 대해 궁금한 것이 있어요. 토마토 재배 시기는 언제인가요?",
+  "response": "토마토는 일반적으로 봄(3-4월)에 파종하여...",
+  "model": "gpt-oss:20b",
+  "status": "completed",
+  "responseTime": 1250,
+  "createdAt": "2025-08-23T14:30:00.000Z"
 }
 ```
 
@@ -317,22 +294,17 @@ Authorization: Bearer {accessToken}
 
 **Response:**
 ```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": "uuid-1", 
-      "prompt": "농업에 대해 궁금해요",
-      "response": "농업에 대한 답변...",
-      "model": "gpt-oss:20b",
-      "status": "completed",
-      "responseTime": 1250,
-      "createdAt": "2025-08-23T14:30:00.000Z"
-    }
-  ],
-  "message": "채팅 기록을 성공적으로 조회했습니다.",
-  "total": 1
-}
+[
+  {
+    "id": "uuid-1", 
+    "prompt": "농업에 대해 궁금해요",
+    "response": "농업에 대한 답변...",
+    "model": "gpt-oss:20b",
+    "status": "completed",
+    "responseTime": 1250,
+    "createdAt": "2025-08-23T14:30:00.000Z"
+  }
+]
 ```
 
 ### 3. 내 특정 채팅 조회 (JWT 인증 필요)
@@ -344,17 +316,13 @@ Authorization: Bearer {accessToken}
 **Response:**
 ```json
 {
-  "success": true,
-  "data": {
-    "id": "uuid-string",
-    "prompt": "농업에 대해 궁금해요",
-    "response": "농업에 대한 답변...",
-    "model": "gpt-oss:20b",
-    "status": "completed",
-    "responseTime": 1250,
-    "createdAt": "2025-08-23T14:30:00.000Z"
-  },
-  "message": "채팅을 성공적으로 조회했습니다."
+  "id": "uuid-string",
+  "prompt": "농업에 대해 궁금해요",
+  "response": "농업에 대한 답변...",
+  "model": "gpt-oss:20b",
+  "status": "completed",
+  "responseTime": 1250,
+  "createdAt": "2025-08-23T14:30:00.000Z"
 }
 ```
 
@@ -366,8 +334,7 @@ GET /v1/chat/health/check
 **Response:**
 ```json
 {
-  "success": true,
-  "message": "LLM 서버가 정상적으로 작동중입니다.",
+  "status": "healthy",
   "timestamp": "2025-08-23T14:30:00.000Z"
 }
 ```
@@ -468,7 +435,7 @@ GET /v1/chat/health/check
 
 4. **컨설팅 결과 확인**
    ```bash
-   GET /v1/consulting/1/result
+   GET /v1/consultings/1
    ```
 
 5. **추가 요구사항으로 재추천**
